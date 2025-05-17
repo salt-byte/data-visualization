@@ -4,9 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>五一反向旅游数据可视化</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="node_modules/echarts/dist/echarts.min.js"></script>
-  <script src="node_modules/echarts/map/js/china.js"></script>
+  <style>
+    body { font-family: 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; margin: 0; background: #fafafa;}
+    .banner { text-align: center; padding: 20px 0 0 0; background: #e0f7fa;}
+    .slogan { color: #26a69a; font-size: 1.2em; }
+    .keywords { margin: 12px 0;}
+    .keyword { background: #80deea; color: #005662; border-radius: 12px; padding: 3px 14px; margin: 0 3px; font-size: 0.95em;}
+    .map-section { max-width: 1000px; margin: 32px auto 0 auto; padding: 0 20px;}
+    .map-container { width: 100%; height: 520px; border-radius: 14px; box-shadow: 0 2px 12px #90caf9; background: #fff;}
+    .tab-bar { margin: 20px 0 6px 0; text-align: center;}
+    .tab { background: #fff; border: 1px solid #b2ebf2; border-radius: 14px; padding: 8px 18px; margin: 0 7px; font-size: 1em; color: #0097a7; cursor: pointer;}
+    .tab.active { background: #00bcd4; color: #fff;}
+    .timeline { text-align: center; margin: 16px 0;}
+    .footer { text-align: center; color: #607d8b; padding: 28px 0 20px 0;}
+    .easter-egg { margin: 8px 0;}
+    .card-popup { position: absolute; min-width: 140px; background: #fff; border-radius: 14px; box-shadow: 0 2px 8px #80cbc4; border: 1px solid #b2ebf2; padding: 18px; z-index: 100; }
+  </style>
+  <!-- 引入 ECharts 主库 -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 </head>
 <body>
   <header class="banner">
@@ -39,6 +54,94 @@
     <div class="summary">数据可见，体验创新。团队：创新可视化小组</div>
     <div class="easter-egg">🎁 <a href="#" id="easterEgg">点我生成你的五一潮流标签！</a></div>
   </footer>
-  <script src="main.js"></script>
+
+  <script>
+    // 1. 拉取全国 GeoJSON，多边形 Feature 数量应远大于1
+    fetch('https://geojson.cn/api/china/100000.json')
+      .then(res => res.json())
+      .then(geoJson => {
+        console.log('加载到的 feature 数量：', geoJson.features.length);
+        echarts.registerMap('china', geoJson);
+
+        // 2. 初始化 ECharts
+        const tabOptions = {
+          heat: { /* …保持你之前的 heat 数据…*/ },
+          trend: { /* …*/ },
+          consume: { /* …*/ },
+          emotion: { /* …*/ },
+          fashion: { /* …*/ }
+        };
+
+        var chart = echarts.init(document.getElementById('mainMap'));
+        var baseOption = {
+          tooltip: { show: true, trigger: 'item', formatter: p => {
+            return `${p.name}<br>值：${p.value[2]||p.value}`;
+          }},
+          geo: {
+            map: 'china',
+            roam: true,
+            zoom: 1.18,
+            itemStyle: {
+              normal: { areaColor: '#e0f7fa', borderColor: '#b2ebf2' },
+              emphasis: { areaColor: '#80deea' }
+            },
+            label: { show: false }
+          },
+          series: []
+        };
+
+        let currentTab = 'heat';
+        chart.setOption(Object.assign({}, baseOption, tabOptions[currentTab]));
+
+        // Tab 切换
+        document.querySelectorAll('.tab').forEach(tab => {
+          tab.addEventListener('click', function() {
+            document.querySelector('.tab.active').classList.remove('active');
+            this.classList.add('active');
+            currentTab = this.getAttribute('data-tab');
+            chart.setOption(Object.assign({}, baseOption, tabOptions[currentTab]), true);
+          });
+        });
+
+        // 时间轴
+        document.getElementById('timelineSlider').addEventListener('input', function() {
+          document.getElementById('timelineLabel').innerText = '假期第' + ( +this.value + 1 ) + '天';
+        });
+
+        // 点击弹窗
+        chart.on('click', params => {
+          const old = document.querySelector('.card-popup');
+          if (old) old.remove();
+          if (!params.name) return;
+          const popup = document.createElement('div');
+          popup.className = 'card-popup';
+          popup.innerHTML = `
+            <strong>${params.name}</strong><br>
+            热度：${(params.value[2]||params.value)}<br>
+            点击查看更多…
+          `;
+          const rect = chart.getDom().getBoundingClientRect();
+          let x = params.event.offsetX, y = params.event.offsetY;
+          if (x > rect.width - 200) x = rect.width - 200;
+          if (y > rect.height - 120) y = rect.height - 120;
+          popup.style.left = x + 'px';
+          popup.style.top  = y + 'px';
+          document.getElementById('mainMap').appendChild(popup);
+          setTimeout(()=>{
+            document.addEventListener('click', function h(e){
+              if (!popup.contains(e.target)) {
+                popup.remove();
+                document.removeEventListener('click', h);
+              }
+            });
+          },10);
+        });
+
+        // 窗口自适应
+        window.addEventListener('resize', () => chart.resize());
+      })
+      .catch(err => console.error('地图加载或解析出错：', err));
+  </script>
+
 </body>
 </html>
