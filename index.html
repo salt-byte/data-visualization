@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>五一反向旅游数据可视化</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="node_modules/echarts/dist/echarts.min.js"></script>
+  <script src="node_modules/echarts/map/js/china.js"></script>
+</head>
+<body>
+  <header class="banner">
+    <h1>五一反向旅游数据可视化</h1>
+    <p class="slogan">用一张主视觉地图+多维交互分层，沉浸式讲述‘反向旅游’和五一新生活方式趋势</p>
+    <div class="keywords">
+      <span class="keyword">下沉城市</span>
+      <span class="keyword">反向旅游热</span>
+      <span class="keyword">Citywalk</span>
+      <span class="keyword">OOTD</span>
+    </div>
+  </header>
+  <main>
+    <section class="map-section">
+      <div id="mainMap" class="map-container"></div>
+      <div class="tab-bar">
+        <button class="tab active" data-tab="heat">热力趋势</button>
+        <button class="tab" data-tab="trend">旅行方式趋势</button>
+        <button class="tab" data-tab="consume">消费结构</button>
+        <button class="tab" data-tab="emotion">舆论热词</button>
+        <button class="tab" data-tab="fashion">穿搭潮流</button>
+      </div>
+      <div class="timeline">
+        <input type="range" min="0" max="4" value="0" id="timelineSlider">
+        <span id="timelineLabel">假期第1天</span>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="summary">数据可见，体验创新。团队：创新可视化小组</div>
+    <div class="easter-egg">🎁 <a href="#" id="easterEgg">点我生成你的五一潮流标签！</a></div>
+  </footer>
+  <script src="main.js"></script>
+</body>
+</html>
