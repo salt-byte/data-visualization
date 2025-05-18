@@ -1,450 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>May Day Reverse Tourism Data Visualization</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-    
-    /* 马卡龙色板 */
-    :root {
-      --macaron-pink: #ffd6e0;
-      --macaron-blue: #c8e6ff;
-      --macaron-green: #d4f8e8;
-      --macaron-yellow: #fff5ba;
-      --macaron-purple: #e5d4ff;
-      --macaron-main: #ffb6c1;
-      --macaron-deep: #ff4d6d;
-      --macaron-bg: #eaf6ff;
-      --macaron-map-bg: #f3eaff;
+document.addEventListener('DOMContentLoaded', function() {
+  // Tab数据配置，先声明
+  const tabOptions = {
+    heat: {
+      series: [{
+        type: 'heatmap',
+        coordinateSystem: 'geo',
+        data: [
+          {name: '北京', value: 120},
+          {name: '上海', value: 110},
+          {name: '成都', value: 98},
+          {name: '天水', value: 150},
+          {name: '柳州', value: 120},
+          {name: '淄博', value: 110},
+          {name: '南昌', value: 105},
+          {name: '巴彦淖尔', value: 140}
+        ],
+        blurSize: 34,
+        minOpacity: 0.15,
+        itemStyle: {color: '#00bcd4'}
+      }]
+    },
+    trend: {
+      series: [{
+        type: 'effectScatter',
+        coordinateSystem: 'geo',
+        data: [
+          {name: '柳州', value: [109.4,24.3, 80]},
+          {name: '淄博', value: [118.0,36.8, 70]},
+          {name: '天水', value: [105.7,34.6, 110]},
+          {name: '成都', value: [104.1,30.6, 98]}
+        ],
+        symbolSize: function(val){ return val[2]/2; },
+        showEffectOn: 'render',
+        rippleEffect: {brushType: 'stroke'},
+        itemStyle: {color: '#ff9800'}
+      }]
+    },
+    consume: {
+      series: [{
+        type: 'scatter',
+        coordinateSystem: 'geo',
+        data: [
+          {name: '北京', value: [116.4,39.9, 120]},
+          {name: '成都', value: [104.1,30.6, 110]},
+          {name: '柳州', value: [109.4,24.3, 70]},
+          {name: '南昌', value: [115.9,28.7, 90]}
+        ],
+        symbolSize: function(val){ return val[2]/3; },
+        itemStyle: {color: '#4caf50'}
+      }]
+    },
+    emotion: {
+      series: [{
+        type: 'scatter',
+        coordinateSystem: 'geo',
+        data: [
+          {name: '南昌', value: [115.9,28.7, 80]},
+          {name: '淄博', value: [118.0,36.8, 75]},
+          {name: '柳州', value: [109.4,24.3, 60]},
+          {name: '天水', value: [105.7,34.6, 120]}
+        ],
+        symbolSize: function(val){ return val[2]/2.5; },
+        itemStyle: {color: '#e91e63'}
+      }]
+    },
+    fashion: {
+      series: [{
+        type: 'effectScatter',
+        coordinateSystem: 'geo',
+        data: [
+          {name: '成都', value: [104.1,30.6, 95]},
+          {name: '上海', value: [121.5,31.2, 90]},
+          {name: '北京', value: [116.4,39.9, 85]},
+          {name: '天水', value: [105.7,34.6, 105]}
+        ],
+        symbolSize: function(val){ return val[2]/2; },
+        showEffectOn: 'render',
+        rippleEffect: {brushType: 'stroke'},
+        itemStyle: {color: '#3f51b5'}
+      }]
     }
-    body { 
-      font-family: 'Press Start 2P', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif; 
-      margin: 0; 
-      background: var(--macaron-bg);
-      image-rendering: pixelated;
-      position: relative;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    /* 像素云朵装饰 */
-    .pixel-cloud {
-      position: absolute;
-      width: 80px; height: 40px;
-      background: #fff;
-      border: 4px solid #c8e6ff;
-      box-shadow: 8px 8px 0 #b5b5b5;
-      left: 10vw; top: 40px;
-      z-index: 1;
-      border-radius: 0;
-    }
-    .pixel-cloud2 {
-      position: absolute;
-      width: 60px; height: 30px;
-      background: #fff;
-      border: 4px solid #e5d4ff;
-      box-shadow: 6px 6px 0 #b5b5b5;
-      right: 12vw; top: 90px;
-      z-index: 1;
-      border-radius: 0;
-    }
-    /* 像素草地装饰 */
-    .pixel-grass {
-      position: absolute;
-      width: 120px; height: 24px;
-      background: #d4f8e8;
-      border: 4px solid #2ec4b6;
-      left: 8vw; bottom: 0;
-      z-index: 1;
-      border-radius: 0;
-    }
-    .pixel-star {
-      position: absolute;
-      width: 18px; height: 18px;
-      background: #fff5ba;
-      border: 3px solid #bfa600;
-      left: 60vw; top: 60px;
-      z-index: 2;
-      border-radius: 0;
-      box-shadow: 2px 2px 0 #bfa600;
-    }
-    .banner { 
-      text-align: center; 
-      padding: 20px 0 0 0; 
-      background: var(--macaron-pink);
-      border-bottom: 0;
-      border-top: 8px solid #fff;
-      border-left: 8px solid #fff;
-      border-right: 8px solid #fff;
-      border-radius: 0;
-      box-shadow: 0 8px 0 #c8e6ff, 8px 0 0 #c8e6ff, -8px 0 0 #c8e6ff;
-      position: relative;
-      z-index: 2;
-    }
-    .slogan { 
-      color: var(--macaron-deep); 
-      font-size: 0.7em;
-      text-shadow: 2px 2px 0 var(--macaron-main);
-    }
-    .keywords { 
-      margin: 12px 0;
-    }
-    .keyword { 
-      background: var(--macaron-pink); 
-      color: var(--macaron-deep); 
-      border-radius: 0; 
-      padding: 3px 10px; 
-      margin: 0 3px; 
-      font-size: 0.6em;
-      border: 3px solid var(--macaron-main);
-      box-shadow: 2px 2px 0 var(--macaron-main);
-      display: inline-block;
-      transform: translateY(0);
-      transition: transform 0.1s;
-      opacity: 0.8;
-      font-family: 'Press Start 2P', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
-      letter-spacing: 1.5px;
-    }
-    .keywords .keyword:nth-child(2) { background: var(--macaron-blue); color: #3b6fa0; border-color: var(--macaron-blue); box-shadow: 2px 2px 0 var(--macaron-blue); }
-    .keywords .keyword:nth-child(3) { background: var(--macaron-green); color: #2ec4b6; border-color: var(--macaron-green); box-shadow: 2px 2px 0 var(--macaron-green); }
-    .keywords .keyword:nth-child(4) { background: var(--macaron-yellow); color: #bfa600; border-color: var(--macaron-yellow); box-shadow: 2px 2px 0 var(--macaron-yellow); }
-    .keyword:hover {
-      transform: translateY(-2px);
-      opacity: 1;
-    }
-    .map-section { 
-      max-width: 1000px; 
-      margin: 32px auto 0 auto; 
-      padding: 0 20px;
-    }
-    .map-container { 
-      width: 100%; 
-      height: 520px; 
-      border-radius: 0; 
-      box-shadow: 8px 8px 0 #e5d4ff; 
-      background: var(--macaron-map-bg);
-      border: 6px solid #fff5ba;
-      position: relative;
-      z-index: 2;
-    }
-    .tab-bar { 
-      margin: 20px 0 6px 0; 
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      z-index: 2;
-      position: relative;
-    }
-    .tab { 
-      background: #fff; 
-      border: 4px solid var(--macaron-main); 
-      border-radius: 0; 
-      padding: 16px 28px; 
-      margin: 0 7px; 
-      font-size: 1.1em; 
-      color: var(--macaron-deep); 
-      cursor: pointer;
-      box-shadow: 4px 4px 0 #c8e6ff;
-      transition: transform 0.12s cubic-bezier(.4,1.4,.6,1), box-shadow 0.12s;
-      position: relative;
-      overflow: hidden;
-      font-weight: normal;
-      letter-spacing: 2.5px;
-      image-rendering: pixelated;
-      font-family: 'Press Start 2P', 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
-    }
-    .tab-bar .tab:nth-child(2) { border-color: var(--macaron-blue); box-shadow: 4px 4px 0 var(--macaron-blue); color: #3b6fa0; }
-    .tab-bar .tab:nth-child(2).active, .tab-bar .tab:nth-child(2):hover { background: linear-gradient(45deg, var(--macaron-blue), #a0c4ff); border-color: var(--macaron-blue); color: #fff; }
-    .tab-bar .tab:nth-child(3) { border-color: var(--macaron-green); box-shadow: 4px 4px 0 var(--macaron-green); color: #2ec4b6; }
-    .tab-bar .tab:nth-child(3).active, .tab-bar .tab:nth-child(3):hover { background: linear-gradient(45deg, var(--macaron-green), #b5ead7); border-color: var(--macaron-green); color: #fff; }
-    .tab-bar .tab:nth-child(4) { border-color: var(--macaron-yellow); box-shadow: 4px 4px 0 var(--macaron-yellow); color: #bfa600; }
-    .tab-bar .tab:nth-child(4).active, .tab-bar .tab:nth-child(4):hover { background: linear-gradient(45deg, var(--macaron-yellow), #fff5ba); border-color: var(--macaron-yellow); color: #fff; }
-    .tab-bar .tab:nth-child(5) { border-color: var(--macaron-purple); box-shadow: 4px 4px 0 var(--macaron-purple); color: #7c5fe6; }
-    .tab-bar .tab:nth-child(5).active, .tab-bar .tab:nth-child(5):hover { background: linear-gradient(45deg, var(--macaron-purple), #e5d4ff); border-color: var(--macaron-purple); color: #fff; }
-    .tab::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(45deg, var(--macaron-main), var(--macaron-deep));
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: -1;
-    }
-    .tab:hover, .tab:focus {
-      transform: scale(1.08) translateY(-2px);
-      box-shadow: 8px 8px 0 #c8e6ff;
-      color: inherit;
-      background: inherit;
-      outline: 2px dashed var(--macaron-main);
-      outline-offset: 2px;
-    }
-    .tab.active { 
-      background: linear-gradient(45deg, var(--macaron-main), var(--macaron-deep));
-      color: #fff;
-      transform: scale(1.08) translateY(2px);
-      box-shadow: none;
-      border-color: var(--macaron-deep);
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-      outline: none;
-    }
-    .timeline { 
-      text-align: center; 
-      margin: 16px 0;
-    }
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 80%;
-      height: 8px;
-      background: linear-gradient(90deg, var(--macaron-pink) 0%, var(--macaron-blue) 25%, var(--macaron-green) 50%, var(--macaron-yellow) 75%, var(--macaron-purple) 100%);
-      border-radius: 0;
-      outline: none;
-      border: 2px solid var(--macaron-main);
-    }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      background: linear-gradient(135deg, var(--macaron-deep), var(--macaron-blue));
-      border-radius: 0;
-      cursor: pointer;
-      border: 2px solid var(--macaron-main);
-    }
-    .footer { 
-      text-align: center; 
-      color: var(--macaron-deep); 
-      padding: 28px 0 20px 0;
-      font-size: 0.7em;
-    }
-    .easter-egg { 
-      margin: 8px 0;
-    }
-    .easter-egg a {
-      color: var(--macaron-deep);
-      text-decoration: none;
-      border-bottom: 2px dotted var(--macaron-main);
-    }
-    .card-popup { 
-      position: absolute; 
-      min-width: 140px; 
-      background: #fff; 
-      border-radius: 0; 
-      box-shadow: 4px 4px 0 var(--macaron-main); 
-      border: 3px solid var(--macaron-main); 
-      padding: 18px; 
-      z-index: 100;
-      font-size: 0.7em;
-    }
-    h1 {
-      font-size: 1.5em;
-      color: var(--macaron-deep);
-      text-shadow: 2px 2px 0 var(--macaron-main);
-      margin-bottom: 20px;
-    }
-  </style>
-  <!-- 引入 ECharts 主库 -->
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-</head>
-<body>
-  <canvas id="pixelStarBg" style="position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:3;pointer-events:none;"></canvas>
-  <header class="banner">
-    <h1>May Day Reverse Tourism Data Visualization</h1>
-    <p class="slogan">An immersive story of 'reverse tourism' and May Day lifestyle trends through an interactive map</p>
-    <div class="keywords">
-      <span class="keyword">Small Cities</span>
-      <span class="keyword">Reverse Tourism</span>
-      <span class="keyword">Citywalk</span>
-      <span class="keyword">OOTD</span>
-    </div>
-  </header>
-  <main>
-    <section class="map-section">
-      <div id="mainMap" class="map-container"></div>
-      <div class="tab-bar">
-        <button class="tab active" data-tab="heat">Heat Trend</button>
-        <button class="tab" data-tab="trend">Travel Style</button>
-        <button class="tab" data-tab="consume">Consumption</button>
-        <button class="tab" data-tab="emotion">Buzz Words</button>
-        <button class="tab" data-tab="fashion">Fashion Trends</button>
-      </div>
-      <div class="timeline">
-        <input type="range" min="0" max="4" value="0" id="timelineSlider">
-        <span id="timelineLabel">Day 1</span>
-      </div>
-    </section>
-  </main>
-  <footer class="footer">
-    <div class="summary">Data Visualization, Experience Innovation. Team: Innovation Visualization Group</div>
-    <div class="easter-egg">🎁 <a href="#" id="easterEgg">Click to generate your May Day trend tag!</a></div>
-  </footer>
+  };
 
-  <script>
-    fetch('https://geojson.cn/api/china/100000.json')
-      .then(res => res.json())
-      .then(geoJson => {
-        console.log('Loaded features count:', geoJson.features.length);
-        echarts.registerMap('china', geoJson);
-
-        const tabOptions = {
-          heat: { /* …keep your existing heat data…*/ },
-          trend: { /* …*/ },
-          consume: { /* …*/ },
-          emotion: { /* …*/ },
-          fashion: { /* …*/ }
-        };
-
-        var chart = echarts.init(document.getElementById('mainMap'));
-        var baseOption = {
-          tooltip: { 
-            show: true, 
-            trigger: 'item', 
-            formatter: p => {
-              return `${p.name}<br>Value: ${p.value[2]||p.value}`;
-            },
-            backgroundColor: '#fff',
-            borderColor: '#ff4d6d',
-            borderWidth: 2,
-            textStyle: {
-              color: '#ff4d6d',
-              fontSize: 12
-            }
-          },
-          geo: {
-            map: 'china',
-            roam: true,
-            zoom: 1.18,
-            itemStyle: {
-              normal: { 
-                areaColor: '#ffe4e8', 
-                borderColor: '#ffb6c1',
-                borderWidth: 1
-              },
-              emphasis: { 
-                areaColor: '#ffb6c1',
-                borderWidth: 2
-              }
-            },
-            label: { show: false }
-          },
-          series: []
-        };
-
-        let currentTab = 'heat';
-        chart.setOption(Object.assign({}, baseOption, tabOptions[currentTab]));
-
-        // Tab switching
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.addEventListener('click', function() {
-            document.querySelector('.tab.active').classList.remove('active');
-            this.classList.add('active');
-            currentTab = this.getAttribute('data-tab');
-            chart.setOption(Object.assign({}, baseOption, tabOptions[currentTab]), true);
-          });
-        });
-
-        // Timeline
-        const timelineSlider = document.getElementById('timelineSlider');
-        const timelineLabel = document.getElementById('timelineLabel');
-        
-        function updateTimelineLabel() {
-          timelineLabel.innerText = 'Day ' + (parseInt(timelineSlider.value) + 1);
+  // 初始化地图
+  var chart = echarts.init(document.getElementById('mainMap'));
+  var baseOption = {
+    tooltip: {
+      show: true,
+      trigger: 'item',
+      formatter: function(params){
+        if(params.data && params.data.name){
+          return params.data.name + '<br>热度：' + (params.value[2] || params.value) + '<br>点击查看详细趋势';
         }
-        
-        timelineSlider.addEventListener('input', updateTimelineLabel);
-        timelineSlider.addEventListener('change', updateTimelineLabel);
-        
-        // Initial label update
-        updateTimelineLabel();
-
-        // Click popup
-        chart.on('click', params => {
-          const old = document.querySelector('.card-popup');
-          if (old) old.remove();
-          if (!params.name) return;
-          const popup = document.createElement('div');
-          popup.className = 'card-popup';
-          popup.innerHTML = `
-            <strong>${params.name}</strong><br>
-            Heat: ${(params.value[2]||params.value)}<br>
-            Click for more...
-          `;
-          const rect = chart.getDom().getBoundingClientRect();
-          let x = params.event.offsetX, y = params.event.offsetY;
-          if (x > rect.width - 200) x = rect.width - 200;
-          if (y > rect.height - 120) y = rect.height - 120;
-          popup.style.left = x + 'px';
-          popup.style.top  = y + 'px';
-          document.getElementById('mainMap').appendChild(popup);
-          setTimeout(()=>{
-            document.addEventListener('click', function h(e){
-              if (!popup.contains(e.target)) {
-                popup.remove();
-                document.removeEventListener('click', h);
-              }
-            });
-          },10);
-        });
-
-        // Window resize
-        window.addEventListener('resize', () => chart.resize());
-      })
-      .catch(err => console.error('Map loading or parsing error:', err));
-
-    // 动态像素星星背景
-    const starColors = [
-      '#ffd6e0', // 粉
-      '#c8e6ff', // 蓝
-      '#d4f8e8', // 绿
-      '#fff5ba', // 黄
-      '#e5d4ff'  // 紫
-    ];
-    const pixelSize = 8;
-    const starCount = 32;
-    let stars = [];
-
-    function drawStars(ctx) {
-      ctx.clearRect(0,0,window.innerWidth,window.innerHeight);
-      for(const s of stars) {
-        ctx.fillStyle = s.color;
-        ctx.fillRect(Math.floor(s.x), Math.floor(s.y), s.size, s.size);
-        // 像素星星十字形
-        if(s.size > pixelSize) {
-          ctx.fillRect(Math.floor(s.x)-pixelSize, Math.floor(s.y)+pixelSize, s.size, pixelSize);
-          ctx.fillRect(Math.floor(s.x)+pixelSize, Math.floor(s.y)+pixelSize, s.size, pixelSize);
-          ctx.fillRect(Math.floor(s.x)+pixelSize, Math.floor(s.y)-pixelSize, pixelSize, s.size);
-          ctx.fillRect(Math.floor(s.x)-pixelSize, Math.floor(s.y)-pixelSize, pixelSize, s.size);
-        }
+        return params.name || '';
       }
-
-    }
-    function animateStars() {
-      for(const s of stars) {
-        s.y += s.speed;
-        if(s.y > window.innerHeight+20) {
-          Object.assign(s, randomStar(), {y: -20});
+    },
+    geo: {
+      map: 'china',
+      roam: true,
+      zoom: 1.18,
+      itemStyle: {
+        normal: {
+          areaColor: '#e0f7fa',
+          borderColor: '#b2ebf2'
+        },
+        emphasis: {
+          areaColor: '#80deea'
         }
-      }
+      },
+      label: {show: false}
+    },
+    series: []
+  };
+  // 激活默认Tab
+  let currentTab = 'heat';
+  chart.setOption(Object.assign({}, baseOption, tabOptions[currentTab]));
 
-      drawStars(starCtx);
-      requestAnimationFrame(animateStars);
-    }
-    const starCanvas = document.getElementById('pixelStarBg');
-    const starCtx = starCanvas.getContext('2d');
-    function resizeStarCanvas() {
-      starCanvas.width = window.innerWidth;
-      starCanvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeStarCanvas);
-    resizeStarCanvas();
-    initStars();
+  // Tab切换
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      document.querySelector('.tab.active').classList.remove('active');
+      this.classList.add('active');
+      currentTab = this.getAttribute('data-tab');
+      const newOption = Object.assign({}, baseOption, tabOptions[currentTab]);
+      chart.setOption(newOption, true);
+    });
+  });
 
-    animateStars();
-  </script>
+  // 时间轴
+  const slider = document.getElementById('timelineSlider');
+  const label = document.getElementById('timelineLabel');
+  slider.addEventListener('input', function() {
+    label.textContent = '假期第' + (parseInt(this.value) + 1) + '天';
+    // 可接入你的不同天数据
+  });
 
-</body>
-</html>
+  // 地图点击弹窗
+  chart.on('click', function(params) {
+    // 移除旧弹窗
+    const oldPopup = document.querySelector('.card-popup');
+    if (oldPopup) oldPopup.remove();
+    // 仅响应城市
+    if (!params.name) return;
+    // 构造弹窗
+    const popup = document.createElement('div');
+    popup.className = 'card-popup';
+    popup.innerHTML = `<strong>${params.name}</strong><br>
+      热度趋势：<span style='color:#00bcd4'>高</span><br>
+      旅行方式：Citywalk<br>
+      消费结构：美食、住宿、交通<br>
+      舆论热词：#反向旅游 #小众城市`;
+    // 定位
+    const mapRect = chart.getDom().getBoundingClientRect();
+    let left = params.event.event.offsetX;
+    let top = params.event.event.offsetY;
+    if (left > mapRect.width - 240) left = mapRect.width - 240;
+    if (top > mapRect.height - 120) top = mapRect.height - 120;
+    popup.style.left = left + 'px';
+    popup.style.top = top + 'px';
+    popup.style.position = 'absolute';
+    document.getElementById('mainMap').appendChild(popup);
+    // 外部点击关闭
+    setTimeout(() => {
+      document.addEventListener('click', function handler(e) {
+        if (!popup.contains(e.target)) {
+          popup.remove();
+          document.removeEventListener('click', handler);
+        }
+      });
+    }, 10);
+  });
+
+  // 彩蛋
+  const easterEggBtn = document.getElementById('easterEgg');
+  if (easterEggBtn) {
+    easterEggBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      alert('你的五一潮流标签：#Citywalk达人 #OOTD先锋 #反向旅游官');
+    });
+  }
+
+  // 浏览器窗口自适应
+  window.addEventListener('resize', function() {
+    if (chart) chart.resize();
+  });
+});
