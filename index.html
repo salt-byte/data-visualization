@@ -284,10 +284,56 @@
   </footer>
 
   <script>
+    const provinceNameMap = {
+      "安徽": "Anhui",
+      "澳门": "Macao",
+      "北京": "Beijing",
+      "重庆": "Chongqing",
+      "福建": "Fujian",
+      "甘肃": "Gansu",
+      "广东": "Guangdong",
+      "广西": "Guangxi",
+      "贵州": "Guizhou",
+      "海南": "Hainan",
+      "河北": "Hebei",
+      "黑龙江": "Heilongjiang",
+      "河南": "Henan",
+      "湖北": "Hubei",
+      "湖南": "Hunan",
+      "江苏": "Jiangsu",
+      "江西": "Jiangxi",
+      "吉林": "Jilin",
+      "辽宁": "Liaoning",
+      "内蒙古": "Inner Mongolia",
+      "宁夏": "Ningxia",
+      "青海": "Qinghai",
+      "山东": "Shandong",
+      "上海": "Shanghai",
+      "山西": "Shanxi",
+      "陕西": "Shaanxi",
+      "四川": "Sichuan",
+      "台湾": "Taiwan",
+      "天津": "Tianjin",
+      "香港": "Hong Kong",
+      "新疆": "Xinjiang",
+      "西藏": "Tibet",
+      "云南": "Yunnan",
+      "浙江": "Zhejiang",
+      // ECharts/GeoJSON 可能包含南海诸岛，但通常不直接显示名称，以防万一
+      "南海诸岛": "South China Sea Islands"
+    };
+
     fetch('https://geojson.cn/api/china/100000.json')
       .then(res => res.json())
       .then(geoJson => {
+        // Translate province names in GeoJSON
+        geoJson.features.forEach(feature => {
+          if (feature.properties && feature.properties.name) {
+            feature.properties.name = provinceNameMap[feature.properties.name] || feature.properties.name;
+          }
+        });
         console.log('Loaded features count:', geoJson.features.length);
+        // Now register the map with translated names
         echarts.registerMap('china', geoJson);
 
         const tabOptions = {
